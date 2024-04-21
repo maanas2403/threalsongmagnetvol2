@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const CLIENT_ID = '6fc54c0da8904cf7b4f6e8567fcfc7f7';
-  const CLIENT_SECRET = 'f4d9d73035d24fe2adb21952ccbdb00c';
+  const CLIENT_ID = '78dd5f4cae814709af30c74c31113c9c';
+  const CLIENT_SECRET = '906c03f0a2f84a9d879eace46f342ceb';
   const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
   let currentlyPlayingAudio = null;
   document.getElementById('songDetails').style.display = 'none';
