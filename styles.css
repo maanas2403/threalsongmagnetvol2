@@ -102,7 +102,7 @@ h1 {
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px; /* Set gap between containers */
-
+   margin-bottom: 100px;
 }
 #songDetails a {
   color: white;
@@ -139,4 +139,10 @@ h1 {
   0 0 10px red, /* Bottom shadow */
   0 0 10px red; /* Left shadow */
 }
-
+footer a{
+  text-decoration: none;
+  color: white;
+}
+footer a:hover{
+  color: red;
+}
