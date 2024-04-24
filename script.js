@@ -2,6 +2,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const CLIENT_ID = '78dd5f4cae814709af30c74c31113c9c';
   const CLIENT_SECRET = '906c03f0a2f84a9d879eace46f342ceb';
   const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+  const menuBtn = document.getElementById('menuBtn');
+  const sideMenu = document.getElementById('sideMenu');
+  const closeBtn = document.getElementById('closeBtn');
+  const topsongs = document.getElementById('TopSongs');
+  const topindian = document.getElementById('TopIndianSongs');
+  function restartPage() {
+    location.reload();
+  }
+  document.getElementById('Home').addEventListener('click', restartPage);
+  sideMenu.style.width = '0';
+  // Function to open the side window menu
+  menuBtn.addEventListener('click', () => {
+    sideMenu.style.width = '250px';
+  });
+
+  // Function to close the side window menu
+  closeBtn.addEventListener('click', () => {
+    sideMenu.style.width = '0';
+  });
   let currentlyPlayingAudio = null;
   document.getElementById('songDetails').style.display = 'none';
   document.getElementById('searchInput').addEventListener('input', function() {
@@ -251,9 +270,431 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function msToMinutesAndSeconds(ms) {
-    const minutes = Math.floor(ms / 60000);
-    const seconds = ((ms % 60000) / 1000).toFixed(0);
-    return `${minutes}:${(seconds < 10 ? '0' : '')}${seconds}`;
+  topsongs.addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const topSongs = await getTopSongs();
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZEVXbMDoHDwVN2tF" target="_blank"> Top 50 - Global</a></h3>';
+    displayTopSongs(topSongs);
+  });
+
+  // Function to show top 10 popular instrumental songs
+  topindian.addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+    const topInstrumentalSongs = await getTopInstrumentalSongs();
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZEVXbLZ52XmnySJg" target="_blank">  Top 50 - India</a></h3>';
+    displayTopSongs(topInstrumentalSongs);
+  });
+
+  // Function to display top songs or instrumental songs
+  function displayTopSongs(tracks) {
+    console.log(tracks);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    if (tracks.length === 0) {
+      similarTracksContainer.innerHTML = '<p>No tracks found</p>';
+      return;
+    }
+    tracks.forEach(track => {
+    const listItem = document.createElement('div');
+    listItem.classList.add('results');
+    listItem.innerHTML = `
+      <img src="${track.album.images[0].url}" alt="Album Poster" width="150">
+      <div>
+        <h4>${track.name} - ${track.artists.map(artist => artist.name).join(', ')}</h4>
+      </div>
+      <div>
+        <audio controls class="similar-audio">
+          <source src="${track.preview_url}" type="audio/mpeg">
+          Your browser does not support the audio element.
+        </audio>
+      </div>
+      <a href="${track.external_urls.spotify}" target="_blank">Listen on Spotify</a>
+    `;
+    similarTracksContainer.appendChild(listItem);
+    const audioElement = listItem.querySelector('audio');
+    audioElement.addEventListener('play', () => {
+      // Pause the currently playing audio, if any
+      if (currentlyPlayingAudio && currentlyPlayingAudio !== audioElement) {
+        currentlyPlayingAudio.pause();
+      }
+      // Set the currently playing audio to the current audio element
+      currentlyPlayingAudio = audioElement;
+    });
+    audioElement.addEventListener('pause', () => {
+      // Reset the currently playing audio if it's the same as the paused audio
+      if (currentlyPlayingAudio === audioElement) {
+        currentlyPlayingAudio = null;
+      }
+    });
+  });
   }
+
+  // Function to get top 10 songs
+  async function getTopSongs() {
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZEVXbMDoHDwVN2tF/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+  const data = await response.json();
+  return data.items.map(item => item.track);
+  }
+
+  // Function to get top 10 instrumental songs
+  async function getTopInstrumentalSongs() {
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZEVXbLZ52XmnySJg/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+  const data = await response.json();
+  return data.items.map(item => item.track);
+  }
+
+  document.getElementById('TodayHits').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DXcBWIGoYBM5M/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M" target="_blank"> Todays Top Hits</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('2000Hits').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DX4o1oenSJRJd/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DX4o1oenSJRJd" target="_blank"> All out 2000s</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('90Hits').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DXbTxeAdrVG2l/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DXbTxeAdrVG2l" target="_blank"> All out 90s</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('80Hits').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DX4UtSsGT1Sbe/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DX4UtSsGT1Sbe" target="_blank"> All out 80s</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('70Hits').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DWTJ7xPn4vNaz/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DWTJ7xPn4vNaz" target="_blank"> All out 70s</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('60Hits').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DXaKIA8E7WcJj/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DXaKIA8E7WcJj" target="_blank"> All out 60s</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('50Hits').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DWSV3Tk4GO2fq/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DWSV3Tk4GO2fq" target="_blank"> All out 50s</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('SoftPop').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DWTwnEm1IYyoj/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DWTwnEm1IYyoj" target="_blank"> Soft Pop Hits</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('RockParty').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DX8FwnYE6PRvL/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DX8FwnYE6PRvL" target="_blank"> Rock Party</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('classicHardcore').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DXaGNG7NmtmZv/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DXaGNG7NmtmZv" target="_blank"> Classic Hardcore</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('wildCountry').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DX5mB2C8gBeUM/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DX5mB2C8gBeUM" target="_blank"> Wild Country</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('danceClassics').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DX8a1tdzq5tbM/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DX8a1tdzq5tbM" target="_blank"> Dance Classic</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('RapStream').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DX58gKmCfKS2T/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DX58gKmCfKS2T" target="_blank"> Most Streamed Rap</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('rap91').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DX1ct2TQrAvRf/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DX1ct2TQrAvRf" target="_blank"> Rap 91 - Indian Rap</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('oldgold').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DWYRTlrhMB12D/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DWYRTlrhMB12D" target="_blank"> Old is Gold- Bollywood</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('bollydance').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DX8xfQRRX1PDm/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DX8xfQRRX1PDm" target="_blank"> Bollywood Dance Music</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('sadhindi').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DXdFesNN9TzXT/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DXdFesNN9TzXT" target="_blank"> Sad Hindi Melodies</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('90ssadhindi').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DWX7nMmBhSzhN/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/37i9dQZF1DWX7nMmBhSzhN" target="_blank"> 90s Sad Bollywood</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('MostStreamed').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/5ABHKGoOzxkaa28ttQV9sE/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/5ABHKGoOzxkaa28ttQV9sE" target="_blank">Most Streamed - Spotify</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
+  document.getElementById('2000sbolly').addEventListener('click', async function(event)  {
+    clearResults();
+    document.getElementById('songDetails').style.display = 'none';
+    document.getElementById('searchInput').style.display = 'none';
+
+    const response = await fetch('https://api.spotify.com/v1/playlists/2Kj5NUtVetggUDHPIGC9U7/tracks', {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+    const data = await response.json();
+    const topSongs = data.items.map(item => item.track);
+    const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.innerHTML = '<h3><a href="https://open.spotify.com/playlist/2Kj5NUtVetggUDHPIGC9U7" target="_blank">2000s Bollywood</a></h3>';
+    displayTopSongs(topSongs);
+    
+  });
 });
