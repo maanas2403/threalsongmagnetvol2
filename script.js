@@ -74,13 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Define the range for each audio feature (plus or minus 10%)
 
-    const mindanceability = 0.6 * danceability;
-    const maxdanceability = 1.4 * danceability;
-    const minenergy = 0.6 * energy;
-    const maxenergy = 1.4 * energy;
+    const mindanceability = 0.2 + danceability;
+    const maxdanceability = danceability - 0.2;
+    const minenergy = 0.2 + energy;
+    const maxenergy = energy - 0.2;
 
-    const minvalence = 0.6 * valence;
-    const maxvalence = 1.4 * valence;
+    const minvalence = 0.2 + valence;
+    const maxvalence = valence - 0.2;
 
     const responseTrackDetails = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
     headers: {
