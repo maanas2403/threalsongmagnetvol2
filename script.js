@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('searchResults').addEventListener('click', async function(event) {
     document.getElementById('songDetails').style.display = 'block';
+    document.getElementById('similarSongs').style.display = 'none';
     const selectedItem = event.target.closest('.result-item');
     if (selectedItem) {
       const trackId = selectedItem.dataset.trackId;
@@ -255,6 +256,7 @@ const maxvalence = 1.4*valence;
     const similarhead = document.getElementById('similarhead');
     similarhead.innerHTML = '';
     const similarTracksContainer = document.getElementById('similarSongs');
+    similarTracksContainer.style.display = 'flex';
     similarTracksContainer.innerHTML = '';
     
     if (similarTracks.length === 0) {
