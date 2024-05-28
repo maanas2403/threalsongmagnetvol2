@@ -81,6 +81,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const minvalence = 0.6 * valence;
     const maxvalence = 1.4 * valence;
+
+    const responseTrackDetails = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+  const trackData = await responseTrackDetails.json();
+  const artistId = trackData.artists[0].id;
+  const responseTopTracks = await fetch(`https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`, {
+    headers: {
+      'Authorization': `Bearer ${await getAccessToken()}`
+    }
+  });
+  const topTracksData = await responseTopTracks.json();
+  const topTracks = topTracksData.tracks;
+  const topTracksFiltered = [];
+  for (const topTrack of topTracks) {
+    const responseTopTrackAudioFeatures = await fetch(`https://api.spotify.com/v1/audio-features/${topTrack.id}`, {
+      headers: {
+        'Authorization': `Bearer ${await getAccessToken()}`
+      }
+    });
+    const topTrackAudioFeatures = await responseTopTrackAudioFeatures.json();
+
+    if (topTrackAudioFeatures.danceability >= mindanceability && topTrackAudioFeatures.danceability <= maxdanceability &&
+        topTrackAudioFeatures.energy >= minenergy && topTrackAudioFeatures.energy <= maxenergy &&
+        topTrackAudioFeatures.valence >= minvalence && topTrackAudioFeatures.valence <= maxvalence) {
+      topTracksFiltered.push(topTrack);
+    }
+  }
     // Use audio feature ranges to get track recommendations
     const responseRecommendations = await fetch(`https://api.spotify.com/v1/recommendations?seed_tracks=${trackId}&market=US&limit=100&min_danceability=${mindanceability}&max_danceability=${maxdanceability}&min_energy=${minenergy}&max_energy=${maxenergy}&min_valence=${minvalence}&max_valence=${maxvalence}`, {
       headers: {
@@ -89,16 +119,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const dataRecommendations = await responseRecommendations.json();
     const similarTracks = dataRecommendations.tracks;
+    const combinedTracks = [...similarTracks, ...topTracksFiltered];
 
-    similarTracks.sort((track1, track2) => {
+    combinedTracks.sort((track1, track2) => {
       const diff1 = calculateDifference(track1, danceability, energy, valence);
       const diff2 = calculateDifference(track2, danceability, energy, valence);
       return diff1 - diff2;
     });
 
-    return similarTracks;
+    return combinedTracks;
   }
-
   function calculateDifference(track, danceability, energy, valence) {
     const trackAudioFeatures = track.audio_features;
     if (!trackAudioFeatures) return Infinity; // Handle undefined audio features
