@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function findSimilarTracks(trackDetails) {
     const trackId = trackDetails.id;
-
+    console.log(await getAccessToken());
     // Fetch audio features of the selected track
     const responseAudioFeatures = await fetch(`https://api.spotify.com/v1/audio-features/${trackId}`, {
       headers: {
