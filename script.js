@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const CLIENT_ID = '78dd5f4cae814709af30c74c31113c9c';
-  const CLIENT_SECRET = '906c03f0a2f84a9d879eace46f342ceb';
+  const CLIENT_ID = '7757aa526dd94cd78b7a76514743a498';
+  const CLIENT_SECRET = '60a1d14ac8bc48cb81e6faf6aa5171ca';
   const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
   const menuBtn = document.getElementById('menuBtn');
   const sideMenu = document.getElementById('sideMenu');
